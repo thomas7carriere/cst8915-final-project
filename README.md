@@ -35,6 +35,126 @@ The entire system is deployed using Kubernetes resources such as Deployments, Se
 
 ## Deployment Instructions
 
+**Prerequisites**
+
+Ensure the following tools and accounts are installed/accesible:
+- Docker Desktop
+- Kubernetes CLI (kubectl)
+- Azure CLI (az)
+- Docker Hub account
+- Azure account with AKS access
+  
+These docker images should be pushed to Docker Hub
+```
+thomas4806/bestbuy-store-front
+thomas4806/bestbuy-store-admin
+thomas4806/bestbuy-product-service
+thomas4806/bestbuy-order-service
+thomas4806/bestbuy-makeline-service
+```
+1. Create the cluster (via Azure Portal or CLI), then connect:
+```
+az aks get-credentials \
+  --resource-group cst8915-final-rg \
+  --name bestbuy-cluster \
+  --overwrite-existing
+```
+```
+az aks get-credentials --resource-group cst8915-final-rg --name bestbuy-cluster --overwrite-existing
+```
+
+This can be verified with:
+` kubectl get nodes`
+
+2. Prepare Kubernetes Deployment Files
+All deployment files are in this repository in the "Deployment Files" folder. These include:
+- secrets.yaml
+- mongodb-statefulset.yaml
+- rabbitmq-deployment.yaml
+- configmap.yaml
+- product-service-deployment.yaml
+- order-service-deployment.yaml
+- makeline-service-deployment.yaml
+- store-front-deployment.yaml
+- store-admin-deployment.yaml
+
+3. Deploy Infrastructure:
+```
+kubectl apply -f "Deployment Files/secrets.yaml"
+kubectl apply -f "Deployment Files/mongodb-statefulset.yaml"
+kubectl apply -f "Deployment Files/rabbitmq-deployment.yaml"
+kubectl apply -f "Deployment Files/configmap.yaml"
+```
+This can be verified with:
+```
+kubectl get pods
+kubectl get pvc
+```
+This should show the mongoDB, rabbitMQ and storage are running.
+
+4. Deploy Backend Services:
+```
+kubectl apply -f "Deployment Files/product-service-deployment.yaml"
+kubectl apply -f "Deployment Files/order-service-deployment.yaml"
+kubectl apply -f "Deployment Files/makeline-service-deployment.yaml"
+```
+This can be verified with:
+```
+kubectl get pods
+kubectl get svc
+```
+
+5. Deploy Front-End Applications:
+```
+kubectl apply -f "Deployment Files/store-front-deployment.yaml"
+kubectl apply -f "Deployment Files/store-admin-deployment.yaml"
+```
+This can be verified with:
+```
+kubectl get svc
+```
+6. Update Front-End Environmental Variables if Required:
+The Store-Front and Store-Admin applications use environment variables at build time. If the API endpoint structure changes, update the .env files in the front-end repositories and rebuild the images before redeploying.
+Example .env file:
+```
+VUE_APP_PRODUCT_SERVICE_URL=/api
+VUE_APP_ORDER_SERVICE_URL=/api
+```
+After rebuilding and pushing updated images to Docker Hub, restart the deployments:
+```
+kubectl rollout restart deployment store-front
+kubectl rollout restart deployment store-admin
+```
+
+7. Seed Product Data
+The AKS MongoDB instance starts empty, so product data must be added before the application can be used.
+
+Port-forward the Product-Service:
+`kubectl port-forward svc/product-service 3030:3030`
+Then send POST requests to add products, for example: 
+```
+POST http://localhost:3030/products
+Content-Type: application/json
+
+{
+  "id": "p1001",
+  "name": "Gaming Mouse",
+  "category": "Accessories",
+  "brand": "Logitech",
+  "price": 79.99,
+  "stock": 25
+}
+```
+8. Access the Application
+Once deployment is complete, use the external IPs from `kubectl get svc` to access the front end applications.
+Example:
+```
+http://<store-front-external-ip>
+http://<store-admin-external-ip>
+```
+
+
+
 ## GitHub Links:
 
 - Order Service: https://github.com/thomas7carriere/CST8915_OrderService_Final
@@ -55,4 +175,4 @@ The entire system is deployed using Kubernetes resources such as Deployments, Se
 https://youtu.be/gsgcOgrGRek  (So sorry! My headset died before I could sign off and thank you for watching my demo)
 
 
-AI Disclosure: AI was used to help with troubleshooting and making changes to baseline project. Also used to help write some readme documentation
+AI Disclosure: AI was used to help with troubleshooting and making changes to baseline project. Also used to help reword some readme documentation
