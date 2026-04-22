@@ -1,6 +1,10 @@
 # Final Project: Cloud-Native App for Best Buy
 
-## Overview
+## Architecture Diagram
+
+## Application Overview
+
+## Deployment Instructions
 
 ## GitHub Links:
 
