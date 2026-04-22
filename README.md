@@ -51,6 +51,8 @@ The entire system is deployed using Kubernetes resources such as Deployments, Se
 - Store Admin: https://hub.docker.com/repository/docker/thomas4806/bestbuy-store-admin
 - Make-Line Service: https://hub.docker.com/repository/docker/thomas4806/bestbuy-makeline-service
 
-## Video
+## Video Demo
+https://youtu.be/gsgcOgrGRek  (So sorry! My headset died before I could sign off and thank you for watching my demo)
+
 
 AI Disclosure: AI was used to help with troubleshooting and making changes to baseline project. Also used to help write some readme documentation
